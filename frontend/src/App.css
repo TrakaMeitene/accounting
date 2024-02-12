@@ -1,0 +1,19 @@
+.signout{
+  color: white;
+  position: absolute;
+  left: 10px;
+}
+
+.auth{
+  width: 500px;
+  border-radius: 20px;
+}
+
+body{
+  display:flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+overflow-y: hidden;
+
+}
