@@ -80,6 +80,14 @@ form{
     position: absolute;
     padding-bottom: 80px;
 }
+.hidden{
+    display: none;
+}
+
+.p-calendar{
+    height: 40px;
+}
+
 
 @keyframes slidein {
     from {  width: 0px;}

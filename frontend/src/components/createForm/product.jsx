@@ -1,43 +1,53 @@
-import React from "react";
-import {  Input, InputNumber } from "rsuite";
+import React, { useEffect, useState} from "react";
 import { MdOutlineEuro } from "react-icons/md";
+import { InputText } from "primereact/inputtext";
+import { InputNumber } from 'primereact/inputnumber';
+import 'primereact/resources/primereact.min.css';
 
-const Label = props => {
-    return <label style={{ width: "auto", display: 'inline-block' }} {...props} />;
-};
+export default function Product({ ind, price, count, unit, name}) {
+const [prices, setprices] = useState(0.00)
+const [counts, setcounts] = useState(0)
 
-export default function Product(){
+    const priceset= (pay, ind)=>{
+        price(pay, ind)
+setprices(pay)
+    }
 
-
-    return(
+    const countset =(number, ind)=>{
+       count(number, ind)
+        setcounts(number)
+    }
+    console.log()
+    return (
         <>
-        <div className="flex-row">
-        <div className="flex-column">
-    
-            <Label>Produkta/pakalpojuma nosaukums</Label>
-            <Input size="md" style={{ width: 200 }} />
-        </div>
-        <div className="flex-column">
-    
-            <Label>Cena par vienību</Label>
-            <InputNumber postfix={<MdOutlineEuro />} defaultValue={0.01} min={0.00} step={0.01} style={{ width: 150 }} />
-        </div>
-        <div className="flex-column">
-    
-            <Label>Daudzums</Label>
-            <InputNumber defaultValue={1} step={1} min={0} style={{ width: 80 }} />
-        </div>
-        <div className="flex-column">
-    
-            <Label>Mērvienība</Label>
-            <Input size="md" style={{ width: 200 }} />
-        </div>
-        <div className="flex-column">
-            <Label>Cena kopā</Label>
-            {"te būs cena"}
-        </div>
+            <div className="p-inputgroup flex-1">
 
-    </div>
-    </>
+                <div className="flex-auto">
+                    <label htmlFor={"products.product" + ind}>Produkta/pakalpojuma nosaukums</label>
+                    <InputText className="p-inputtext-sm" 
+                        id={ind ? "products.product" + ind : "products.product"} style={{ width: 280 }} onChange={(e) => name(e.target.value, ind)}/>
+                </div>
+                <div className="flex-auto">
+
+
+                    <label htmlFor={"price" + ind}>Cena par vienību</label>
+                    <InputNumber className="p-inputtext-sm" id={"price" + ind}  value={prices} onChange={(e)=>priceset(e.value, ind)}  locale="lv-LV" minFractionDigits={2} min={0} currency="EUR"  mode="currency"  style={{ width: 100 }} />
+                </div>
+                <div className="flex-auto">
+
+                    <label htmlFor={"count" + ind}>Daudzums</label>
+                    <InputNumber className="p-inputtext-sm" id={"count" + ind} value={counts} locale="lv-LV" style={{ width: 80 }} onChange={(e) => countset(e.value, ind)} />
+                </div>
+                <div className="flex-auto">
+
+                    <label htmlFor={"products.unit" + ind} >Mērvienība</label>
+                    <InputText className="p-inputtext-sm" id={ind ? "products.unit" + ind : "products.unit"}  style={{ width: 200 }} onChange={(e) => unit(e.target.value, ind)} />
+                </div>
+                <div className="flex-column" style={{ width: 150 }}>
+                    <label htmlFor={"total" + ind}>Cena kopā</label>
+                    <div style={{ marginTop: "10px", paddingLeft: "20px" }}>{(prices * counts).toFixed(2)} <MdOutlineEuro size={12}/></div>
+                </div>
+            </div>
+        </>
     )
 }
