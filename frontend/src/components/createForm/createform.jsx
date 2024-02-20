@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react"
 import "./createform.css"
 import { MdOutlineNavigateNext } from "react-icons/md";
-import { MdOutlineEuro } from "react-icons/md";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from 'primereact/inputnumber';
 import { RadioButton } from 'primereact/radiobutton';
@@ -9,10 +8,12 @@ import { Calendar } from 'primereact/calendar';
 import { addLocale } from 'primereact/api';
 import 'primereact/resources/primereact.min.css';
 import { Button } from 'primereact/button';
+import { MdDelete } from "react-icons/md";
+import { Tooltip } from 'primereact/tooltip';
 
 import Product from "./product";
-import { TiDeleteOutline } from "react-icons/ti";
 import { useForm } from "react-hook-form"
+import axios from 'axios';
 
 export default function CreateForm({ close }) {
     const [anim, setanim] = useState(false)
@@ -109,6 +110,7 @@ export default function CreateForm({ close }) {
     const totalsumm = () => {
 
         const unique = products.filter((a, i) => products.findIndex((s) => a.ind === s.ind) === i)
+        setProducts(unique)
         let set = []
         for (let i = 0; i < unique.length; i++) {
             if (!unique[i].price) {
@@ -126,66 +128,84 @@ export default function CreateForm({ close }) {
     }
 
     const onSubmit = (data) => {
-        console.log(data);
+        data.products = JSON.stringify(products)
+        data.payd = payd
+        console.log(data)
+        axios.post("http://localhost:3300/create", { data })
+            .then(response => console.log(response))
     };
-console.log(payd)
+
+
     return (
         <>
             <div className={anim === true ? "create out" : "create in"}>
-                <div className="createHeader" onClick={closing}> <MdOutlineNavigateNext color="#876FF3FF" size={25} />Atpakaļ</div>
+                <div className="createHeader" onClick={closing}> <MdOutlineNavigateNext color="#876FF3FF" size={25} className="transform" />Atpakaļ</div>
                 <h1 className="text black">Jauns rēķins</h1>
 
                 <form onSubmit={handleSubmit(onSubmit)} >
                     <div className="flex-row">
+                        <span>
+                            <label htmlFor="documentNr">Dokumenta numurs</label>
+                            <InputText className="p-inputtext-sm" style={{ width: 200 }} id="documentNr" {...register("documentNr")} />
+                        </span>
+                        <span>
+                            <label htmlFor="buttondisplay" className="font-bold block mb-2">
+                                Datums
+                            </label>
 
-                        <label htmlFor="documentNr">Dokumenta numurs</label>
-                        <InputText className="p-inputtext-sm" style={{ width: 200 }} id="documentNr" {...register("documentNr")} />
-                        <label htmlFor="buttondisplay" className="font-bold block mb-2">
-                            Datums
-                        </label>
-                        <Calendar className="p-inputtext-sm" id="buttondisplay" locale="lv" value={date} onChange={(e) => setDate(e.value)} showIcon dateFormat="dd.mm.yy" />
+                            <Calendar className="p-inputtext-sm" id="buttondisplay" locale="lv" value={date} onChange={(e) => setDate(e.value)} showIcon dateFormat="dd.mm.yy" />
+                        </span>
                     </div>
+
                     <label htmlFor="comment">Komentāri </label>
                     <InputText className="p-inputtext-sm" style={{ width: 700 }} id="comment" {...register("Comment")} />
 
                     <h2 >Partneris</h2>
                     <hr />
                     <div className="flex-row">
-
+                    <span>
                         <label htmlFor="company">Nosaukums</label>
                         <InputText className="p-inputtext-sm" style={{ width: 200 }} id="company"  {...register("Company")} />
-
+                        </span>
+                        <span>
                         <label htmlFor="companyReg">Reģistrācijas numurs</label>
                         <InputText className="p-inputtext-sm" style={{ width: 300 }} id="companyReg" />
+                        </span>
                     </div>
                     <h2 >Maksājuma dati</h2>
                     <hr />
-                    <div className="flex-row">
-
+                    <div className="flex-auto">
+                    <span>
                         <label htmlFor="paytill">Maksājuma termiņš</label>
                         <Calendar id="paytill" locale="lv" onChange={(e) => setDatetill(e.value)} showIcon dateFormat="dd.mm.yy" />
-
+                        </span>
                     </div>
                     <div className="flex-row">
-
+                    <span>
                         <label htmlFor="companybank">Klienta bankas konts</label>
                         <InputText className="p-inputtext-sm" style={{ width: 200 }} id="companybank" {...register("bank")} />
-
-
+                        </span>
+                        <span>
                         <label htmlFor="companyadress">Juridiskā adrese</label>
 
-                        <InputText className="p-inputtext-sm" style={{ width: 200 }} id="companyadress" {...register("adress")} />
+                        <InputText className="p-inputtext-sm" style={{ width: 300 }} id="companyadress" {...register("adress")} />
+                        </span>
                     </div>
                     <div className="flex-row">
-
+                    <span>
                         <label htmlFor="email">E-pasts </label>
-                        <InputText className="p-inputtext-sm" type="email" style={{ width: 200 }} id="email" {...register("email")} />
+                        <InputText className="p-inputtext-sm" type="email" style={{ width: 250 }} id="email" {...register("email")} />
+                        </span>
+                        <span>
                         <label htmlFor="phone">Tālrunis</label>
                         <InputText className="p-inputtext-sm" style={{ width: 200 }} id="phone" {...register("phone")} />
+                        </span>
                     </div>
 
                     <h2>Produkti un pakalpojumi</h2>
                     <hr />
+                    <Tooltip target=".delete" className="delete-tooltip"/>
+
                     {
                         [...Array(newproducts)].map((v, i) =>
                             !hiddenindex.includes(i) && <div className="flex-row" key={i} index={i} >
@@ -197,7 +217,14 @@ console.log(payd)
                                     unit={unitchange}
                                     name={namechange}
                                     value={units}
-                                /><TiDeleteOutline size={30} onClick={() => removeitem(i)} /></div>)
+                                /><MdDelete
+                                    data-pr-tooltip="Dzēst produktu/pakalpojumu"
+                                    data-pr-position="top"
+                                    size={25}
+                                    className="delete"
+
+                                    tooltipoptions={{className: "delete-tooltip"}}
+                                    onClick={() => removeitem(i)} /></div>)
                     }
                     <br />
                     <Button label="Pievienot produktu/pakalpojumu" onClick={addproduct} severity="secondary" outlined />
@@ -209,13 +236,18 @@ console.log(payd)
                         <InputNumber className="p-inputtext-sm" currency="EUR" mode="currency" id="total" value={summ} disabled />
                     </div>
                     <br />
-
-                    <RadioButton inputId="payd" name="payd" value="Apmaksāts" checked={payd === "Apmaksāts"} onChange={(e) => setPayd(e.value)} />
-                    <label htmlFor="payd" className="ml-2">Apmaksāts</label>
-                    <RadioButton inputId="payd-not" name="payd" value="Neapmaksāts"  checked={payd === "Neapmaksāts"} onChange={(e) => setPayd(e.value)}/>
-                    <label htmlFor="payd-not" className="ml-2">Nepmaksāts</label>
-
+                    <div className="flex-auto">
+                        <span className="margin">
+                        <label htmlFor="payd" className="ml-2">Apmaksāts</label>
+                            <RadioButton inputId="payd" name="payd" value="Apmaksāts" checked={payd === "Apmaksāts"} onChange={(e) => setPayd(e.value)} />
+                        </span>
+                        <span className="margin">
+                        <label htmlFor="payd-not" className="ml-2">Nepmaksāts</label>
+                            <RadioButton inputId="payd-not" name="payd" value="Neapmaksāts" checked={payd === "Neapmaksāts"} onChange={(e) => setPayd(e.value)} />
+                        </span>
+                    </div>
                     <div className="flex-row">
+                        
                         <Button label="IZVEIDOT" />
                         <Button label="ATCELT" severity="secondary" outlined />
                     </div>
